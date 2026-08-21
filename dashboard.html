@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Battery SOH Prediction Dashboard</title>
+
+<style>
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#071525;
+    color:#ffffff;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+header{
+    background:#0b1d32;
+    padding:28px 15px;
+    text-align:center;
+    border-bottom:1px solid #1d3b5d;
+}
+
+header h1{
+    color:#32e88b;
+    font-size:32px;
+    margin-bottom:8px;
+}
+
+header p{
+    color:#aebfd2;
+    font-size:15px;
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+nav{
+    background:#06101d;
+    padding:15px;
+    text-align:center;
+    position:sticky;
+    top:0;
+    z-index:100;
+    border-bottom:1px solid #1d3b5d;
+}
+
+nav a{
+    color:#ffffff;
+    text-decoration:none;
+    margin:0 14px;
+    font-weight:bold;
+    font-size:14px;
+}
+
+nav a:hover{
+    color:#32e88b;
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero{
+    min-height:400px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    padding:50px 20px;
+
+    background:
+    radial-gradient(
+        circle at center,
+        #12365a 0%,
+        #071525 65%
+    );
+}
+
+.hero-content{
+    max-width:850px;
+}
+
+.hero h2{
+    font-size:46px;
+    margin-bottom:20px;
+}
+
+.hero h2 span{
+    color:#32e88b;
+}
+
+.hero p{
+    color:#b7c5d6;
+    font-size:18px;
+    line-height:1.7;
+}
+
+button{
+    margin-top:25px;
+
+    padding:13px 25px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#32e88b;
+
+    color:#06101d;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    font-size:15px;
+}
+
+button:hover{
+    background:#20c977;
+}
+
+
+/* =====================================================
+   SECTIONS
+===================================================== */
+
+section{
+    max-width:1200px;
+    margin:auto;
+    padding:65px 20px;
+}
+
+section > h2{
+    text-align:center;
+    font-size:31px;
+    margin-bottom:35px;
+}
+
+
+/* =====================================================
+   DASHBOARD CARDS
+===================================================== */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(3,1fr);
+
+    gap:20px;
+
+}
+
+.card{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    border-radius:14px;
+
+    padding:25px;
+
+    text-align:center;
+
+}
+
+.card h3{
+
+    color:#aebfd2;
+
+    font-size:15px;
+
+}
+
+.card p{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    margin-top:15px;
+
+}
+
+.soh-card p{
+
+    color:#32e88b;
+
+    font-size:42px;
+
+}
+
+.status{
+
+    display:inline-block;
+
+    margin-top:10px;
+
+    padding:6px 17px;
+
+    border-radius:20px;
+
+    background:#123c2b;
+
+    color:#32e88b;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+}
+
+
+/* =====================================================
+   SYSTEM STATUS
+===================================================== */
+
+.system-status{
+
+    margin-top:25px;
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+}
+
+.status-box{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    padding:10px 18px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+}
+
+.connected{
+
+    color:#32e88b;
+
+}
+
+
+/* =====================================================
+   GRAPH GRID
+===================================================== */
+
+.graph-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(2,1fr);
+
+    gap:25px;
+
+}
+
+
+/* =====================================================
+   GRAPH CARD
+===================================================== */
+
+.graph-card{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    border-radius:15px;
+
+    padding:20px;
+
+    box-shadow:
+    0 8px 25px
+    rgba(0,0,0,0.20);
+
+}
+
+.graph-card h3{
+
+    text-align:center;
+
+    color:#32e88b;
+
+    font-size:19px;
+
+    margin-bottom:7px;
+
+}
+
+.graph-card p{
+
+    text-align:center;
+
+    color:#91a6bb;
+
+    font-size:12px;
+
+    margin-bottom:10px;
+
+}
+
+.graph-canvas{
+
+    width:100%;
+
+    height:350px;
+
+    display:block;
+
+}
+
+
+/* =====================================================
+   AXIS INFORMATION
+===================================================== */
+
+.axis-info{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:25px;
+
+    flex-wrap:wrap;
+
+    margin-top:12px;
+
+    padding:11px;
+
+    background:#08182a;
+
+    border-radius:7px;
+
+    font-size:12px;
+
+    color:#b7c5d6;
+
+}
+
+.axis-info strong{
+
+    color:#32e88b;
+
+}
+
+
+/* =====================================================
+   SHAP
+===================================================== */
+
+.shap-container{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    border-radius:15px;
+
+    padding:30px;
+
+}
+
+.shap-title{
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+.shap-title h3{
+
+    color:#32e88b;
+
+}
+
+.shap-title p{
+
+    color:#9fb1c4;
+
+    font-size:13px;
+
+    margin-top:5px;
+
+}
+
+.shap-row{
+
+    display:grid;
+
+    grid-template-columns:
+    180px 1fr 60px;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin:20px 0;
+
+}
+
+.shap-name{
+
+    font-size:14px;
+
+}
+
+.bar{
+
+    height:12px;
+
+    background:#172d46;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+.bar-fill{
+
+    height:100%;
+
+    background:#2698ff;
+
+    border-radius:20px;
+
+}
+
+.shap-value{
+
+    color:#32e88b;
+
+    text-align:right;
+
+    font-weight:bold;
+
+}
+
+
+/* =====================================================
+   COMPONENTS
+===================================================== */
+
+.components{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(4,1fr);
+
+    gap:20px;
+
+}
+
+.component{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    border-radius:12px;
+
+    padding:22px;
+
+}
+
+.component-number{
+
+    color:#32e88b;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+}
+
+.component h3{
+
+    margin:10px 0;
+
+    font-size:17px;
+
+}
+
+.component p{
+
+    color:#9fb1c4;
+
+    font-size:13px;
+
+    line-height:1.6;
+
+}
+
+
+/* =====================================================
+   AI MODEL
+===================================================== */
+
+.ai-box{
+
+    background:#0d2138;
+
+    border:1px solid #1d3b5d;
+
+    border-radius:15px;
+
+    padding:35px;
+
+    text-align:center;
+
+}
+
+.ai-box h3{
+
+    color:#32e88b;
+
+    font-size:25px;
+
+    margin-bottom:15px;
+
+}
+
+.ai-box p{
+
+    color:#b7c5d6;
+
+    max-width:800px;
+
+    margin:auto;
+
+    line-height:1.7;
+
+}
+
+.flow{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin-top:30px;
+
+}
+
+.flow span,
+.flow strong{
+
+    padding:10px 14px;
+
+    background:#132d49;
+
+    border:1px solid #285174;
+
+    border-radius:7px;
+
+    font-size:13px;
+
+}
+
+.flow strong{
+
+    color:#32e88b;
+
+    background:#123c2b;
+
+}
+
+.flow b{
+
+    color:#32e88b;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer{
+
+    background:#06101d;
+
+    text-align:center;
+
+    padding:30px;
+
+    color:#8295aa;
+
+    font-size:13px;
+
+    line-height:1.8;
+
+    border-top:1px solid #1d3b5d;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:900px){
+
+    .dashboard{
+
+        grid-template-columns:
+        repeat(2,1fr);
+
+    }
+
+    .graph-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .components{
+
+        grid-template-columns:
+        repeat(2,1fr);
+
+    }
+
+}
+
+@media(max-width:600px){
+
+    nav a{
+
+        margin:0 5px;
+
+        font-size:11px;
+
+    }
+
+    .dashboard{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .components{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .hero h2{
+
+        font-size:30px;
+
+    }
+
+    .graph-canvas{
+
+        height:320px;
+
+    }
+
+    .shap-row{
+
+        grid-template-columns:
+        110px 1fr 45px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header>
+
+<h1>
+🔋 Smart Battery SOH Monitoring System
+</h1>
+
+<p>
+Explainable CNN-LSTM Based Battery State of Health Prediction
+</p>
+
+</header>
+
+
+
+<!-- =====================================================
+     NAVIGATION
+===================================================== -->
+
+<nav>
+
+<a href="#home">Home</a>
+
+<a href="#dashboard">Dashboard</a>
+
+<a href="#graphs">Graphs</a>
+
+<a href="#shap">SHAP</a>
+
+<a href="#system">System</a>
+
+<a href="#ai">AI Model</a>
+
+</nav>
+
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section id="home" class="hero">
+
+<div class="hero-content">
+
+<h2>
+
+Smart Battery
+<span>Health Monitoring</span>
+System
+
+</h2>
+
+<p>
+
+Real-time monitoring of battery voltage,
+current, temperature, SOC and internal
+resistance with CNN-LSTM based SOH prediction.
+
+</p>
+
+<button onclick="goDashboard()">
+
+Open Dashboard
+
+</button>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     LIVE DASHBOARD
+===================================================== -->
+
+<section id="dashboard">
+
+<h2>
+Live Battery Parameters
+</h2>
+
+
+<div class="dashboard">
+
+
+<!-- VOLTAGE -->
+
+<div class="card">
+
+<h3>
+⚡ Voltage
+</h3>
+
+<p id="voltage">
+3.72 V
+</p>
+
+</div>
+
+
+<!-- CURRENT -->
+
+<div class="card">
+
+<h3>
+🔌 Current
+</h3>
+
+<p id="current">
+1.20 A
+</p>
+
+</div>
+
+
+<!-- TEMPERATURE -->
+
+<div class="card">
+
+<h3>
+🌡 Temperature
+</h3>
+
+<p id="temperature">
+29.4 °C
+</p>
+
+</div>
+
+
+<!-- SOC -->
+
+<div class="card">
+
+<h3>
+🔋 State of Charge
+</h3>
+
+<p id="soc">
+76.5 %
+</p>
+
+</div>
+
+
+<!-- RESISTANCE -->
+
+<div class="card">
+
+<h3>
+Ω Internal Resistance
+</h3>
+
+<p id="resistance">
+82 mΩ
+</p>
+
+</div>
+
+
+<!-- SOH -->
+
+<div class="card soh-card">
+
+<h3>
+🧠 Predicted SOH
+</h3>
+
+<p id="soh">
+91.7 %
+</p>
+
+<span
+class="status"
+id="healthStatus">
+
+🟢 HEALTHY
+
+</span>
+
+</div>
+
+</div>
+
+
+<button
+onclick="simulateNewData()">
+
+🔄 Generate New Battery Data
+
+</button>
+
+
+<div class="system-status">
+
+<div class="status-box">
+
+ESP32:
+<span class="connected">
+● Connected
+</span>
+
+</div>
+
+<div class="status-box">
+
+Sensors:
+<span class="connected">
+● Active
+</span>
+
+</div>
+
+<div class="status-box">
+
+AI Model:
+<span class="connected">
+● Ready
+</span>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ALL GRAPHS
+===================================================== -->
+
+<section id="graphs">
+
+<h2>
+Battery Parameter Analysis
+</h2>
+
+
+<div class="graph-grid">
+
+
+<!-- =================================================
+     GRAPH 1 : SOH
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+🔋 SOH vs Battery Cycle
+</h3>
+
+<p>
+Battery health degradation with cycle number
+</p>
+
+<canvas
+id="sohGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+State of Health (SOH %)
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     GRAPH 2 : VOLTAGE
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+⚡ Voltage vs Battery Cycle
+</h3>
+
+<p>
+Battery voltage variation during cycling
+</p>
+
+<canvas
+id="voltageGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+Voltage (V)
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     GRAPH 3 : CURRENT
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+🔌 Current vs Battery Cycle
+</h3>
+
+<p>
+Battery current variation during cycling
+</p>
+
+<canvas
+id="currentGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+Current (A)
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     GRAPH 4 : TEMPERATURE
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+🌡 Temperature vs Battery Cycle
+</h3>
+
+<p>
+Battery temperature variation during cycling
+</p>
+
+<canvas
+id="temperatureGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+Temperature (°C)
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     GRAPH 5 : INTERNAL RESISTANCE
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+Ω Internal Resistance vs Battery Cycle
+</h3>
+
+<p>
+Increase in internal resistance due to aging
+</p>
+
+<canvas
+id="resistanceGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+Internal Resistance (mΩ)
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================================
+     GRAPH 6 : SOC
+================================================= -->
+
+<div class="graph-card">
+
+<h3>
+🔋 SOC vs Battery Cycle
+</h3>
+
+<p>
+Battery state of charge variation
+</p>
+
+<canvas
+id="socGraph"
+class="graph-canvas">
+</canvas>
+
+<div class="axis-info">
+
+<div>
+<strong>X-Axis:</strong>
+Battery Cycle Number (Cycles)
+</div>
+
+<div>
+<strong>Y-Axis:</strong>
+State of Charge (SOC %)
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     SHAP
+===================================================== -->
+
+<section id="shap">
+
+<h2>
+SHAP Feature Importance
+</h2>
+
+
+<div class="shap-container">
+
+<div class="shap-title">
+
+<h3>
+Parameters Influencing SOH Prediction
+</h3>
+
+<p>
+Reference feature importance for the prototype
+</p>
+
+</div>
+
+
+<!-- RESISTANCE -->
+
+<div class="shap-row">
+
+<div class="shap-name">
+Internal Resistance
+</div>
+
+<div class="bar">
+
+<div
+class="bar-fill"
+style="width:84%">
+</div>
+
+</div>
+
+<div class="shap-value">
+42%
+</div>
+
+</div>
+
+
+<!-- TEMPERATURE -->
+
+<div class="shap-row">
+
+<div class="shap-name">
+Temperature
+</div>
+
+<div class="bar">
+
+<div
+class="bar-fill"
+style="width:50%">
+</div>
+
+</div>
+
+<div class="shap-value">
+25%
+</div>
+
+</div>
+
+
+<!-- VOLTAGE -->
+
+<div class="shap-row">
+
+<div class="shap-name">
+Voltage
+</div>
+
+<div class="bar">
+
+<div
+class="bar-fill"
+style="width:34%">
+</div>
+
+</div>
+
+<div class="shap-value">
+17%
+</div>
+
+</div>
+
+
+<!-- SOC -->
+
+<div class="shap-row">
+
+<div class="shap-name">
+SOC
+</div>
+
+<div class="bar">
+
+<div
+class="bar-fill"
+style="width:20%">
+</div>
+
+</div>
+
+<div class="shap-value">
+10%
+</div>
+
+</div>
+
+
+<!-- CURRENT -->
+
+<div class="shap-row">
+
+<div class="shap-name">
+Current
+</div>
+
+<div class="bar">
+
+<div
+class="bar-fill"
+style="width:12%">
+</div>
+
+</div>
+
+<div class="shap-value">
+6%
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     SYSTEM COMPONENTS
+===================================================== -->
+
+<section id="system">
+
+<h2>
+System Components
+</h2>
+
+
+<div class="components">
+
+
+<div class="component">
+
+<span class="component-number">
+01
+</span>
+
+<h3>
+🔋 Li-ion Battery
+</h3>
+
+<p>
+Battery cell under test.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+02
+</span>
+
+<h3>
+⚡ Voltage & Current Sensor
+</h3>
+
+<p>
+Measures battery electrical parameters.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+03
+</span>
+
+<h3>
+🌡 Temperature Sensor
+</h3>
+
+<p>
+Measures battery temperature.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+04
+</span>
+
+<h3>
+🧠 ESP32
+</h3>
+
+<p>
+Collects and transmits sensor data.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+05
+</span>
+
+<h3>
+🔌 Constant Current Load
+</h3>
+
+<p>
+Provides controlled battery discharge.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+06
+</span>
+
+<h3>
+📺 LCD Display
+</h3>
+
+<p>
+Displays live battery parameters.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+07
+</span>
+
+<h3>
+🔔 Buzzer & LED</h3>
+
+<p>
+Provides battery warning indication.
+</p>
+
+</div>
+
+
+<div class="component">
+
+<span class="component-number">
+08
+</span>
+
+<h3>
+💻 Computer</h3>
+
+<p>
+Runs data processing and AI prediction.
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     AI MODEL
+===================================================== -->
+
+<section id="ai">
+
+<h2>
+Explainable CNN-LSTM Model
+</h2>
+
+
+<div class="ai-box">
+
+<h3>
+🧠 AI-Based Battery SOH Prediction
+</h3>
+
+
+<p>
+
+Battery operating parameters are provided
+to the CNN-LSTM model. CNN extracts important
+features while LSTM learns the temporal
+degradation behavior of the battery.
+
+</p>
+
+
+<div class="flow">
+
+<span>
+Voltage
+</span>
+
+<b>→</b>
+
+<span>
+Current
+</span>
+
+<b>→</b>
+
+<span>
+Temperature
+</span>
+
+<b>→</b>
+
+<span>
+SOC
+</span>
+
+<b>→</b>
+
+<span>
+Internal Resistance
+</span>
+
+<b>→</b>
+
+<span>
+CNN
+</span>
+
+<b>→</b>
+
+<span>
+LSTM
+</span>
+
+<b>→</b>
+
+<strong>
+SOH
+</strong>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+<p>
+© 2026 Smart Battery SOH Prediction Project
+</p>
+
+<p>
+ESP32 | Sensors | Battery Cycling |
+CNN-LSTM | SHAP
+</p>
+
+</footer>
+
+
+
+<script>
+
+/* =====================================================
+   DASHBOARD NAVIGATION
+===================================================== */
+
+function goDashboard(){
+
+    document
+    .getElementById("dashboard")
+    .scrollIntoView({
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =====================================================
+   BATTERY DATA
+===================================================== */
+
+let batteryData = [];
+
+let currentCycle = 0;
+
+
+/* =====================================================
+   GENERATE INITIAL DATA
+===================================================== */
+
+function generateBatteryData(){
+
+    batteryData = [];
+
+    for(
+        let cycle = 0;
+        cycle <= 50;
+        cycle++
+    ){
+
+        /* SOH */
+
+        let soh =
+            100 -
+            cycle * 0.72 +
+            Math.sin(cycle * 0.45) * 0.7;
+
+
+        /* Voltage */
+
+        let voltage =
+            4.20 -
+            cycle * 0.009 +
+            Math.sin(cycle * 0.35) * 0.025;
+
+
+        /* Current */
+
+        let current =
+            1.20 +
+            Math.sin(cycle * 0.55) * 0.12;
+
+
+        /* Temperature */
+
+        let temperature =
+            28 +
+            cycle * 0.10 +
+            Math.sin(cycle * 0.40) * 1.3;
+
+
+        /* Internal Resistance */
+
+        let resistance =
+            65 +
+            cycle * 0.72 +
+            Math.sin(cycle * 0.30) * 1.5;
+
+
+        /* SOC */
+
+        let soc =
+            95 -
+            cycle * 0.45 +
+            Math.sin(cycle * 0.35) * 1.2;
+
+
+        batteryData.push({
+
+            cycle:cycle,
+
+            soh:soh,
+
+            voltage:voltage,
+
+            current:current,
+
+            temperature:temperature,
+
+            resistance:resistance,
+
+            soc:soc
+
+        });
+
+    }
+
+}
+
+
+/* =====================================================
+   UPDATE DASHBOARD
+===================================================== */
+
+function updateDashboard(){
+
+    let last =
+        batteryData[
+            batteryData.length - 1
+        ];
+
+
+    document.getElementById(
+        "voltage"
+    ).innerHTML =
+        last.voltage.toFixed(2)
+        + " V";
+
+
+    document.getElementById(
+        "current"
+    ).innerHTML =
+        last.current.toFixed(2)
+        + " A";
+
+
+    document.getElementById(
+        "temperature"
+    ).innerHTML =
+        last.temperature.toFixed(1)
+        + " °C";
+
+
+    document.getElementById(
+        "soc"
+    ).innerHTML =
+        last.soc.toFixed(1)
+        + " %";
+
+
+    document.getElementById(
+        "resistance"
+    ).innerHTML =
+        last.resistance.toFixed(1)
+        + " mΩ";
+
+
+    document.getElementById(
+        "soh"
+    ).innerHTML =
+        last.soh.toFixed(1)
+        + " %";
+
+
+    let status =
+        document.getElementById(
+            "healthStatus"
+        );
+
+
+    if(last.soh >= 90){
+
+        status.innerHTML =
+            "🟢 HEALTHY";
+
+        status.style.color =
+            "#32e88b";
+
+    }
+
+    else if(last.soh >= 80){
+
+        status.innerHTML =
+            "🟡 WARNING";
+
+        status.style.color =
+            "#ffd166";
+
+    }
+
+    else{
+
+        status.innerHTML =
+            "🔴 CRITICAL";
+
+        status.style.color =
+            "#ff5c5c";
+
+    }
+
+}
+
+
+/* =====================================================
+   DRAW GRAPH FUNCTION
+===================================================== */
+
+function drawGraph(
+    canvasId,
+    dataKey,
+    yLabel,
+    minY,
+    maxY,
+    unit
+){
+
+    const canvas =
+        document.getElementById(canvasId);
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    const width =
+        canvas.clientWidth;
+
+    const height =
+        canvas.clientHeight;
+
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        width * dpr;
+
+    canvas.height =
+        height * dpr;
+
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    /* GRAPH MARGINS */
+
+    const left = 65;
+
+    const right = 20;
+
+    const top = 35;
+
+    const bottom = 65;
+
+
+    const graphWidth =
+        width - left - right;
+
+    const graphHeight =
+        height - top - bottom;
+
+
+    /* BACKGROUND */
+
+    ctx.fillStyle =
+        "#08182a";
+
+    ctx.fillRect(
+        left,
+        top,
+        graphWidth,
+        graphHeight
+    );
+
+
+    /* =================================================
+       Y GRID
+    ================================================= */
+
+    let ySteps = 5;
+
+
+    for(
+        let i=0;
+        i<=ySteps;
+        i++
+    ){
+
+        let value =
+            minY +
+            (
+                (maxY-minY)
+                *
+                i
+                /
+                ySteps
+            );
+
+
+        let y =
+            top +
+            graphHeight -
+            (
+                i/ySteps
+            )
+            *
+            graphHeight;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            left,
+            y
+        );
+
+        ctx.lineTo(
+            left+graphWidth,
+            y
+        );
+
+
+        ctx.strokeStyle =
+            "#23415f";
+
+        ctx.lineWidth = 1;
+
+        ctx.stroke();
+
+
+        ctx.fillStyle =
+            "#d5e2ee";
+
+        ctx.font =
+            "11px Arial";
+
+        ctx.textAlign =
+            "right";
+
+
+        ctx.fillText(
+
+            value.toFixed(
+                dataKey === "soh" ||
+                dataKey === "soc"
+                ? 0
+                : 1
+            )
+            + unit,
+
+            left-8,
+
+            y+4
+
+        );
+
+    }
+
+
+    /* =================================================
+       X GRID
+    ================================================= */
+
+    for(
+        let cycle=0;
+        cycle<=50;
+        cycle+=5
+    ){
+
+        let x =
+            left +
+            (
+                cycle/50
+            )
+            *
+            graphWidth;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            top
+        );
+
+        ctx.lineTo(
+            x,
+            top+graphHeight
+        );
+
+
+        ctx.strokeStyle =
+            "#23415f";
+
+        ctx.stroke();
+
+
+        ctx.fillStyle =
+            "#d5e2ee";
+
+        ctx.font =
+            "11px Arial";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.fillText(
+
+            cycle,
+
+            x,
+
+            top+
+            graphHeight+
+            20
+
+        );
+
+    }
+
+
+    /* =================================================
+       AXES
+    ================================================= */
+
+    ctx.strokeStyle =
+        "#ffffff";
+
+    ctx.lineWidth = 2;
+
+
+    /* Y AXIS */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        top
+    );
+
+    ctx.lineTo(
+        left,
+        top+graphHeight
+    );
+
+    ctx.stroke();
+
+
+    /* X AXIS */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        top+graphHeight
+    );
+
+    ctx.lineTo(
+        left+graphWidth,
+        top+graphHeight
+    );
+
+    ctx.stroke();
+
+
+    /* =================================================
+       DATA CURVE
+    ================================================= */
+
+    ctx.beginPath();
+
+
+    batteryData.forEach(
+        function(point,index){
+
+            let value =
+                point[dataKey];
+
+
+            let x =
+                left +
+                (
+                    point.cycle/50
+                )
+                *
+                graphWidth;
+
+
+            let y =
+                top +
+                graphHeight -
+                (
+                    (
+                        value-minY
+                    )
+                    /
+                    (
+                        maxY-minY
+                    )
+                )
+                *
+                graphHeight;
+
+
+            if(index===0){
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            }
+
+            else{
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
+        }
+    );
+
+
+    ctx.strokeStyle =
+        "#32e88b";
+
+    ctx.lineWidth = 3;
+
+    ctx.stroke();
+
+
+    /* =================================================
+       DATA POINTS
+    ================================================= */
+
+    batteryData.forEach(
+        function(point){
+
+            if(
+                point.cycle % 5 === 0
+            ){
+
+                let value =
+                    point[dataKey];
+
+
+                let x =
+                    left +
+                    (
+                        point.cycle/50
+                    )
+                    *
+                    graphWidth;
+
+
+                let y =
+                    top +
+                    graphHeight -
+                    (
+                        (
+                            value-minY
+                        )
+                        /
+                        (
+                            maxY-minY
+                        )
+                    )
+                    *
+                    graphHeight;
+
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    3,
+                    0,
+                    Math.PI*2
+                );
+
+
+                ctx.fillStyle =
+                    "#32e88b";
+
+                ctx.fill();
+
+            }
+
+        }
+    );
+
+
+    /* =================================================
+       X AXIS TITLE
+    ================================================= */
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "bold 13px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+
+        "Battery Cycle Number (Cycles)",
+
+        left+
+        graphWidth/2,
+
+        height-15
+
+    );
+
+
+    /* =================================================
+       Y AXIS TITLE
+    ================================================= */
+
+    ctx.save();
+
+
+    ctx.translate(
+        16,
+        top+
+        graphHeight/2
+    );
+
+
+    ctx.rotate(
+        -Math.PI/2
+    );
+
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "bold 13px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        yLabel,
+        0,
+        0
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   DRAW ALL GRAPHS
+===================================================== */
+
+function drawAllGraphs(){
+
+    /* SOH */
+
+    drawGraph(
+        "sohGraph",
+        "soh",
+        "State of Health (SOH %)",
+        50,
+        105,
+        "%"
+    );
+
+
+    /* VOLTAGE */
+
+    drawGraph(
+        "voltageGraph",
+        "voltage",
+        "Battery Voltage (V)",
+        3.5,
+        4.3,
+        " V"
+    );
+
+
+    /* CURRENT */
+
+    drawGraph(
+        "currentGraph",
+        "current",
+        "Battery Current (A)",
+        0.5,
+        2.0,
+        " A"
+    );
+
+
+    /* TEMPERATURE */
+
+    drawGraph(
+        "temperatureGraph",
+        "temperature",
+        "Battery Temperature (°C)",
+        20,
+        40,
+        " °C"
+    );
+
+
+    /* RESISTANCE */
+
+    drawGraph(
+        "resistanceGraph",
+        "resistance",
+        "Internal Resistance (mΩ)",
+        50,
+        110,
+        " mΩ"
+    );
+
+
+    /* SOC */
+
+    drawGraph(
+        "socGraph",
+        "soc",
+        "State of Charge (SOC %)",
+        60,
+        105,
+        "%"
+    );
+
+}
+
+
+/* =====================================================
+   GENERATE NEW DATA
+===================================================== */
+
+function simulateNewData(){
+
+    let degradation =
+        0.55 +
+        Math.random()*0.35;
+
+
+    batteryData = [];
+
+
+    for(
+        let cycle=0;
+        cycle<=50;
+        cycle++
+    ){
+
+        let soh =
+            100 -
+            cycle*degradation +
+            Math.sin(
+                cycle*0.45
+            )*0.7;
+
+
+        let voltage =
+            4.20 -
+            cycle*0.008 +
+            Math.sin(
+                cycle*0.35
+            )*0.025;
+
+
+        let current =
+            1.20 +
+            Math.sin(
+                cycle*0.55
+            )*0.15;
+
+
+        let temperature =
+            28 +
+            cycle*0.11 +
+            Math.sin(
+                cycle*0.40
+            )*1.4;
+
+
+        let resistance =
+            65 +
+            cycle*0.75 +
+            Math.sin(
+                cycle*0.30
+            )*1.5;
+
+
+        let soc =
+            95 -
+            cycle*0.45 +
+            Math.sin(
+                cycle*0.35
+            )*1.2;
+
+
+        batteryData.push({
+
+            cycle:cycle,
+
+            soh:soh,
+
+            voltage:voltage,
+
+            current:current,
+
+            temperature:temperature,
+
+            resistance:resistance,
+
+            soc:soc
+
+        });
+
+    }
+
+
+    updateDashboard();
+
+    drawAllGraphs();
+
+}
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+generateBatteryData();
+
+updateDashboard();
+
+drawAllGraphs();
+
+
+/* =====================================================
+   RESPONSIVE GRAPH
+===================================================== */
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        drawAllGraphs();
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
